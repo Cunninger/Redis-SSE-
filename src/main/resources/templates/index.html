@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat Room</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        #chat-box {
+            width: 500px;
+            height: 400px;
+            border: 1px solid #ccc;
+            overflow-y: scroll;
+        }
+    </style>
+</head>
+<body>
+<div id="chat-box"></div>
+<input type="text" id="message-input" placeholder="Enter your message">
+<button id="send-button">Send</button>
+
+<script>
+    $(document).ready(function () {
+        //这是jQuery提供的一个方法，用于在页面加载完毕后执行指定的函数
+        const chatBox = $('#chat-box');
+        const messageInput = $('#message-input');
+        const sendButton = $('#send-button');
+
+        // 发送消息
+        sendButton.click(function () {
+            const message = messageInput.val();
+            $.post('/send', {message: message}, function (data) {
+                messageInput.val('');
+            });
+        });
+
+        // 长轮询接收消息？怎么理解长轮询
+        (function listen() {
+            const eventSource = new EventSource('/listen'); //   1.创建EventSource对象，指定服务器端的URL
+            eventSource.onmessage = function (event) {      // 2.监听message事件
+                const message = event.data;                 //   3.获取服务器端发送的数据
+                chatBox.append(`<div>${message}</div>`);    //  4.将数据显示在页面上
+            };
+        })();
+    });
+    // script标签方法执行的时机是在页面加载完毕后，所以不会出现找不到元素的情况
+</script>
+</body>
+</html>
